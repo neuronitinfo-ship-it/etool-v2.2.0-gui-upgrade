@@ -4,6 +4,7 @@ on:
   release:
     types: [published, created]
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-macos:
@@ -40,11 +41,15 @@ jobs:
       - name: Create macOS DMG
         working-directory: ./unlock_tool/dist
         run: |
-          # Create DMG for distribution
+          release_tag="${{ github.event.release.tag_name }}"
+          if [ -z "$release_tag" ]; then
+            release_tag="${{ github.ref_name }}"
+          fi
+          echo "Release tag: $release_tag"
           hdiutil create -volname "Android Servicing Tool" \
                          -srcfolder unlock_tool \
                          -ov -format UDZO \
-                         unlock_tool-v${{ github.event.release.tag_name }}-macos-universal.dmg
+                         unlock_tool-$release_tag-macos-universal.dmg
           ls -lh *.dmg
 
       - name: Upload to Release

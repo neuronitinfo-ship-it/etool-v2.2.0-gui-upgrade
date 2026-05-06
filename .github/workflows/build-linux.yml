@@ -4,6 +4,7 @@ on:
   release:
     types: [published, created]
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-linux:
@@ -45,8 +46,12 @@ jobs:
       - name: Create distribution archive
         working-directory: ./unlock_tool/dist
         run: |
-          # Compress the Linux build
-          tar -czf unlock_tool-v${{ github.event.release.tag_name }}-linux-x86_64.tar.gz unlock_tool/
+          release_tag="${{ github.event.release.tag_name }}"
+          if [ -z "$release_tag" ]; then
+            release_tag="${{ github.ref_name }}"
+          fi
+          echo "Release tag: $release_tag"
+          tar -czf unlock_tool-$release_tag-linux-x86_64.tar.gz unlock_tool/
           ls -lh *.tar.gz
 
       - name: Upload to Release

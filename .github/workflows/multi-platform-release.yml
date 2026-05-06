@@ -6,11 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-all-platforms:
+  build-info:
     runs-on: ubuntu-latest
-    outputs:
-      build_status: ${{ steps.final.outputs.status }}
-
     steps:
       - uses: actions/checkout@v4
       
@@ -21,55 +18,18 @@ jobs:
           echo "release_name=${{ github.event.release.name }}" >> $GITHUB_OUTPUT
           echo "draft=${{ github.event.release.draft }}" >> $GITHUB_OUTPUT
           
-      - name: Notify Build Start
+      - name: Create Build Summary
         run: |
-          echo "🚀 Starting multi-platform build for ${{ steps.release_info.outputs.tag_name }}"
-          echo "Release: ${{ steps.release_info.outputs.release_name }}"
-          echo "Draft: ${{ steps.release_info.outputs.draft }}"
-
-      - name: Create Job Summary
-        run: |
-          echo "# 🔨 Multi-Platform Build Started" >> $GITHUB_STEP_SUMMARY
+          echo "# 🚀 Multi-Platform Build Initiated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Release Tag:** ${{ steps.release_info.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Release Name:** ${{ steps.release_info.outputs.release_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Platforms:**" >> $GITHUB_STEP_SUMMARY
-          echo "- ⏳ Windows (build-windows.yml)" >> $GITHUB_STEP_SUMMARY
-          echo "- ⏳ macOS (build-macos.yml)" >> $GITHUB_STEP_SUMMARY
-          echo "- ⏳ Linux (build-linux.yml)" >> $GITHUB_STEP_SUMMARY
-
-  trigger-windows-build:
-    needs: build-all-platforms
-    uses: ./.github/workflows/build-windows.yml
-    secrets: inherit
-
-  trigger-macos-build:
-    needs: build-all-platforms
-    uses: ./.github/workflows/build-macos.yml
-    secrets: inherit
-
-  trigger-linux-build:
-    needs: build-all-platforms
-    uses: ./.github/workflows/build-linux.yml
-    secrets: inherit
-
-  release-complete:
-    needs: [trigger-windows-build, trigger-macos-build, trigger-linux-build]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - name: Create Final Summary
-        run: |
-          echo "# ✅ Multi-Platform Release Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "**Platforms Being Built:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 🪟 **Windows** (build-windows.yml)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🍎 **macOS** (build-macos.yml)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐧 **Linux** (build-linux.yml)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Release Tag:** ${{ github.event.release.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Estimated Time:** 5-10 minutes" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Build Results:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Windows: ${{ needs.trigger-windows-build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- macOS: ${{ needs.trigger-macos-build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Linux: ${{ needs.trigger-linux-build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Download from Release:**" >> $GITHUB_STEP_SUMMARY
-          echo "https://github.com/${{ github.repository }}/releases/tag/${{ github.event.release.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "All three platforms are building in parallel. Check the Actions tab for detailed progress." >> $GITHUB_STEP_SUMMARY
