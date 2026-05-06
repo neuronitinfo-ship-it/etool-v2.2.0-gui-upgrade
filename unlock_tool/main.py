@@ -105,9 +105,12 @@ Examples:
     # Default to dev mode
     if args.test_device:
         logger.info("Testing device detection...")
-        detector = DeviceDetector()
-        devices = detector.scan_devices()
-        logger.info(f"Found {len(devices)} devices: {devices}")
+        detector = DeviceDetector(logger)
+        device = detector.detect_device()
+        if device:
+            logger.info(f"Device detected: {device}")
+        else:
+            logger.info("No device detected")
     elif args.prod:
         start_production_server()
     else:

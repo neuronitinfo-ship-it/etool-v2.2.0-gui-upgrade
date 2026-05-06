@@ -8,17 +8,41 @@ ROOT_DIR = Path(os.getcwd()).resolve()
 binaries = []
 datas = []
 
-# Only add files/directories that exist
-if (ROOT_DIR / 'devices.json').exists():
-    datas.append((str(ROOT_DIR / 'devices.json'), '.'))
-if (ROOT_DIR / 'drivers').exists():
-    datas.append((str(ROOT_DIR / 'drivers'), 'drivers'))
-if (ROOT_DIR / 'assets').exists():
-    datas.append((str(ROOT_DIR / 'assets'), 'assets'))
-if (ROOT_DIR / 'README_Windows.md').exists():
-    datas.append((str(ROOT_DIR / 'README_Windows.md'), '.'))
-if (ROOT_DIR / 'EULA.txt').exists():
-    datas.append((str(ROOT_DIR / 'EULA.txt'), '.'))
+# Add web frontend assets
+frontend_items = [
+    ('dist', 'dist'),  # Built frontend
+    ('src', 'src'),    # Source files for development
+    ('public', 'public'),  # Public assets
+    ('package.json', '.'),  # Node.js dependencies
+    ('vite.config.ts', '.'),  # Vite config
+    ('tsconfig.json', '.'),   # TypeScript config
+    ('tailwind.config.ts', '.'),  # Tailwind config
+]
+
+for item, target in frontend_items:
+    item_path = ROOT_DIR / item
+    if item_path.exists():
+        datas.append((str(item_path), target))
+
+# Add optional files and directories
+optional_items = [
+    ('devices.json', '.'),
+    ('database', 'database'),
+    ('assets', 'assets'),
+    ('README.md', '.'),
+    ('EULA.txt', '.'),
+    ('requirements.txt', '.'),
+]
+
+for item, target in optional_items:
+    item_path = ROOT_DIR / item
+    if item_path.exists():
+        datas.append((str(item_path), target))
+
+# Add drivers if it exists
+drivers_path = ROOT_DIR / 'drivers'
+if drivers_path.exists():
+    datas.append((str(drivers_path), 'drivers'))
 
 # Windows-specific binaries
 if sys.platform == 'win32':
@@ -30,11 +54,14 @@ if sys.platform == 'win32':
         binaries.append((str(fastboot), '.'))
 
 hidden_imports = [
-    'PyQt6.QtCore',
-    'PyQt6.QtGui',
-    'PyQt6.QtWidgets',
-    'PyQt6.QtSvg',
-    'PyQt6.sip',
+    'http.server',
+    'socketserver',
+    'subprocess',
+    'pathlib',
+    'argparse',
+    'json',
+    'urllib',
+    'webbrowser',
     'usb.core',
     'usb.util',
     'serial',
@@ -43,11 +70,7 @@ hidden_imports = [
     'Crypto.Random',
     'Crypto.Cipher',
     'Crypto.Hash',
-    'modules.exploits.qualcomm_edl_exploit',
-    'modules.exploits.mediatek_brom_exploit',
-    'modules.exploits.samsung_frp_exploit',
-    'modules.exploits.google_pixel_frp_exploit',
-    'modules.exploits.huawei_frp_exploit',
+]
     'modules.exploits.lockscreen_removal_exploit',
     'modules.exploits.imei_qcn_exploit',
 ]

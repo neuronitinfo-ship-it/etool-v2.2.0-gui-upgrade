@@ -9,6 +9,22 @@ ROOT_DIR = Path(os.getcwd()).resolve()
 binaries = []
 datas = []
 
+# Add web frontend assets
+frontend_items = [
+    ('dist', 'dist'),  # Built frontend
+    ('src', 'src'),    # Source files for development
+    ('public', 'public'),  # Public assets
+    ('package.json', '.'),  # Node.js dependencies
+    ('vite.config.ts', '.'),  # Vite config
+    ('tsconfig.json', '.'),   # TypeScript config
+    ('tailwind.config.ts', '.'),  # Tailwind config
+]
+
+for item, target in frontend_items:
+    item_path = ROOT_DIR / item
+    if item_path.exists():
+        datas.append((str(item_path), target))
+
 # Add optional files and directories
 optional_items = [
     ('devices.json', '.'),
@@ -16,6 +32,7 @@ optional_items = [
     ('assets', 'assets'),
     ('README.md', '.'),
     ('EULA.txt', '.'),
+    ('requirements.txt', '.'),
 ]
 
 for item, target in optional_items:
@@ -65,18 +82,26 @@ else:
 
 hidden_imports = collect_submodules('modules')
 
-# Add PyQt6 and other critical dependencies explicitly
+# Add web server and other critical dependencies explicitly
 hidden_imports.extend([
-    'PyQt6',
-    'PyQt6.QtWidgets',
-    'PyQt6.QtGui',
-    'PyQt6.QtCore',
-    'PyQt6.QtSvg',
-    'PyQt6.sip',
+    'http.server',
+    'socketserver',
+    'subprocess',
+    'pathlib',
+    'argparse',
+    'json',
+    'urllib',
+    'webbrowser',
     'Crypto',
     'Crypto.Random',
     'Crypto.Cipher',
     'Crypto.Hash',
+    'usb.core',
+    'usb.util',
+    'serial',
+    'serial.tools.list_ports',
+    'adb_shell',
+    'fastboot',
 ])
 
 block_cipher = None
@@ -106,7 +131,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=True,  # Keep console for web server output
     icon=None,
 )
 coll = COLLECT(

@@ -24,6 +24,16 @@ REM Install PyInstaller if not present
 echo Installing PyInstaller...
 "%PYTHON_PATH%" -m pip install pyinstaller --quiet
 
+REM Build the frontend first
+echo Building frontend...
+if exist "package.json" (
+    if exist "node_modules" (
+        call npm run build
+    ) else (
+        echo Warning: Node modules not found, skipping frontend build
+    )
+)
+
 REM Check if build_windows.spec exists
 if not exist "build_windows.spec" (
     echo Creating build_windows.spec...
