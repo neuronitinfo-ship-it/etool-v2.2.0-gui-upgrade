@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="/home/tjms/Downloads/v2master/unlock_tool/android_admin_apk/app"
+    name=":app"
+    type="APP"
+    maven="licenseadmin:app:"
+    agpVersion="8.1.0"
+    buildFolder="build"
+    bootClassPath="/home/tjms/Android/Sdk/platforms/android-34/android.jar:/home/tjms/Android/Sdk/build-tools/33.0.1/core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-34"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>

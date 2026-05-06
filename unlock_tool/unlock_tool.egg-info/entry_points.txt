@@ -1,0 +1,2 @@
+[console_scripts]
+unlock-tool = main:main

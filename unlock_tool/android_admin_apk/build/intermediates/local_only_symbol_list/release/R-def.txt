@@ -1,0 +1,10 @@
+R_DEF: Internal format may change without notice
+local
+id buttonGenerate
+id inputExpiry
+id inputFeatures
+id inputUser
+id outputLicense
+layout activity_main
+string app_name
+style Theme.LicenseAdmin

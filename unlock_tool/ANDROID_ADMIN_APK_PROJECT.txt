@@ -1,0 +1,149 @@
+Android Admin APK Project Structure
+
+app/
+  src/
+    main/
+      java/com/example/licenseadmin/
+        MainActivity.kt
+        LicenseGeneratorScreen.kt
+        KeystoreManager.kt
+        LicenseRecord.kt
+      res/
+        layout/
+          activity_main.xml
+        values/
+          strings.xml
+          themes.xml
+  build.gradle
+settings.gradle
+build.gradle
+
+MainActivity.kt:
+```kotlin
+package com.example.licenseadmin
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.example.licenseadmin.ui.LicenseGeneratorScreen
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            LicenseGeneratorScreen()
+        }
+    }
+}
+```
+
+LicenseGeneratorScreen.kt:
+```kotlin
+package com.example.licenseadmin.ui
+
+import android.util.Base64
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.example.licenseadmin.crypto.KeystoreManager
+import com.google.zxing.BarcodeFormat
+import com.journeyapps.barcodescanner.BarcodeEncoder
+
+@Composable
+fun LicenseGeneratorScreen() {
+    val keystoreManager = remember { KeystoreManager() }
+    var userName by remember { mutableStateOf("") }
+    var expiryDate by remember { mutableStateOf("") }
+    var licenseText by remember { mutableStateOf("") }
+    var features by remember { mutableStateOf(mapOf(
+        "android_frp" to true,
+        "ios_passcode" to true,
+        "ios_flashing" to true,
+        "imei_repair" to false
+    )) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("License Admin", style = MaterialTheme.typography.headlineSmall)
+        Spacer(Modifier.height(16.dp))
+        OutlinedTextField(value = userName, onValueChange = { userName = it }, label = { Text("User Name") })
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(value = expiryDate, onValueChange = { expiryDate = it }, label = { Text("Expiry (YYYY-MM-DD) ") })
+        Spacer(Modifier.height(8.dp))
+        features.forEach { (feature, enabled) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = enabled, onCheckedChange = { checked -> features = features.toMutableMap().also { it[feature] = checked } })
+                Text(feature)
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = {
+            val payload = mapOf(
+                "user" to userName,
+                "expiry" to expiryDate,
+                "features" to features.filter { it.value }.keys.toList(),
+                "license_id" to "LIC-${System.currentTimeMillis()}"
+            )
+            licenseText = keystoreManager.signLicense(payload)
+        }) {
+            Text("Generate License")
+        }
+        Spacer(Modifier.height(16.dp))
+        OutlinedTextField(value = licenseText, onValueChange = {}, label = { Text("License Output") }, modifier = Modifier.fillMaxWidth())
+    }
+}
+```
+
+KeystoreManager.kt:
+```kotlin
+package com.example.licenseadmin.crypto
+
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import javax.crypto.Cipher
+
+class KeystoreManager {
+    private val keyAlias = "license_key"
+    private val keyStore: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+
+    init {
+        createKeyIfNeeded()
+    }
+
+    private fun createKeyIfNeeded() {
+        if (!keyStore.containsAlias(keyAlias)) {
+            val generator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore")
+            val spec = KeyGenParameterSpec.Builder(
+                keyAlias,
+                KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
+            )
+                .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
+                .setDigests(KeyProperties.DIGEST_SHA256)
+                .setKeySize(2048)
+                .build()
+            generator.initialize(spec)
+            generator.generateKeyPair()
+        }
+    }
+
+    fun signLicense(payload: Map<String, Any>): String {
+        val json = org.json.JSONObject(payload).toString()
+        val privateKey = keyStore.getKey(keyAlias, null) as java.security.PrivateKey
+        val signature = java.security.Signature.getInstance("SHA256withRSA")
+        signature.initSign(privateKey)
+        signature.update(json.toByteArray(Charsets.UTF_8))
+        val signed = signature.sign()
+        val token = org.json.JSONObject().apply {
+            put("payload", org.json.JSONObject(payload))
+            put("signature", Base64.encodeToString(signed, Base64.NO_WRAP))
+        }
+        return Base64.encodeToString(token.toString().toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
+    }
+}
+```
+
+For a full working project, include the standard Gradle files and AndroidManifest entries. Use ZXing or Compose QR libraries for QR code rendering.
