@@ -34,7 +34,7 @@ jobs:
       - name: Build macOS App
         working-directory: ./unlock_tool
         run: |
-          python -m PyInstaller build.spec --noconfirm --clean --target-arch universal2
+          python -m PyInstaller build.spec --noconfirm --clean
           echo "Build complete! Checking output..."
           ls -la dist/
 
