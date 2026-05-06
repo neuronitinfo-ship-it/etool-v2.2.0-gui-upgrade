@@ -36,7 +36,7 @@ jobs:
         run: |
           python -m PyInstaller build_windows.spec --noconfirm --clean
           echo "Build complete! Checking output..."
-          dir /s dist\
+          ls -Recurse dist/ 2>$null || Get-ChildItem -Path dist -Recurse
 
       - name: Create distribution archive
         working-directory: ./unlock_tool/dist
