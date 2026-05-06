@@ -15,7 +15,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from core.device_detector import DeviceDetector
-from core.license_manager import LicenseManager
 from core.logger import setup_logger
 
 # Setup logging
