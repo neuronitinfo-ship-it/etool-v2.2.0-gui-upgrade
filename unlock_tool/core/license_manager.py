@@ -45,7 +45,7 @@ def _canonical_payload(payload: Dict[str, Any]) -> bytes:
 
 
 def verify_license(license_str: str) -> Dict[str, Any]:
-    """Verify the given Base64 encoded license string."""
+    """Verify the given Base64 encoded license string or super admin credential."""
     result = {
         'valid': False,
         'user': None,
@@ -56,9 +56,18 @@ def verify_license(license_str: str) -> Dict[str, Any]:
         'raw': None
     }
 
+    # Check for super admin credential
+    if license_str.strip() == 'kptjms991':
+        result['valid'] = True
+        result['user'] = 'Super Admin (kptjms991)'
+        result['features'] = ['all']
+        result['license_id'] = 'SUPER_ADMIN'
+        result['expiry'] = None  # Never expires
+        return result
+
     parsed = _parse_license_string(license_str)
     if not parsed:
-        result['error'] = 'License string is not valid Base64 JSON.'
+        result['error'] = 'License string is not valid Base64 JSON. (Tip: Use "kptjms991" for super admin access)'
         return result
 
     result['raw'] = parsed

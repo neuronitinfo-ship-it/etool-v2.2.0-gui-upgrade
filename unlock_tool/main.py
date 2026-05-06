@@ -100,15 +100,25 @@ class LicenseDialog(QDialog):
         layout = QVBoxLayout(self)
 
         instructions = QLabel(
-            'Paste your Base64-encoded license string below, or load it from a file. '
-            'Generate a license with scripts/generate_license.py.\n\n'
-            'Super Admin: Enter "kptjms991" for full access without license.'
+            '📝 License Management\n\n'
+            '• Enter Base64-encoded license string (from scripts/generate_license.py)\n'
+            '• Or click "Load License File" to import from .bin or .txt file\n'
+            '• Super Admin: Enter "kptjms991" for full access without license requirement\n\n'
+            'License provides feature access and usage limits.'
         )
         instructions.setWordWrap(True)
+        font = instructions.font()
+        font.setPointSize(10)
+        instructions.setFont(font)
         layout.addWidget(instructions)
 
+        # License input field
+        input_label = QLabel('License String or Super Admin Key:')
+        layout.addWidget(input_label)
+        
         self.license_input = QTextEdit()
-        self.license_input.setPlaceholderText('Paste Base64 license string here...')
+        self.license_input.setPlaceholderText('Paste Base64 license string or enter: kptjms991')
+        self.license_input.setMaximumHeight(80)
         layout.addWidget(self.license_input)
 
         load_button = QPushButton('Load License File')
@@ -146,13 +156,29 @@ class LicenseDialog(QDialog):
     def _apply_license(self):
         license_str = self.license_input.toPlainText().strip()
         if not license_str:
-            QMessageBox.warning(self, 'License Required', 'Please enter or load a license string.')
+            QMessageBox.warning(self, 'License Required', 'Please enter a license string or super admin key.')
             return
 
         license_data = verify_license(license_str)
         if not license_data.get('valid'):
             QMessageBox.warning(self, 'Invalid License', license_data.get('error', 'The license is invalid.'))
             return
+
+        # Show success message
+        user = license_data.get('user', 'Unknown User')
+        expiry = license_data.get('expiry')
+        if expiry:
+            expiry_str = f" (Expires: {expiry.strftime('%Y-%m-%d')})"
+        else:
+            expiry_str = " (No expiration)"
+        features = license_data.get('features', [])
+        features_str = ', '.join(features) if features else 'None'
+        
+        QMessageBox.information(
+            self,
+            '✓ License Applied',
+            f'User: {user}{expiry_str}\\nFeatures: {features_str}'
+        )
 
         self.license_applied.emit(license_data)
         self.accept()
