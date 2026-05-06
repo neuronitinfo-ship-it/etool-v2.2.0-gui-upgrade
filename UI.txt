@@ -1,0 +1,169 @@
+﻿main.py
+import sys
+from PyQt6.QtWidgets import QApplication
+from ui.main_window import MainWindow
+app = QApplication(sys.argv)
+window = MainWindow()
+window.show()
+sys.exit(app.exec())
+
+ui/main_window.py
+from PyQt6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout
+from ui.sidebar import Sidebar
+from ui.topbar import TopBar
+from ui.device_panel import DevicePanel
+from ui.bottom_tools import BottomTools
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("eTool - Mobile Unlock Tool")
+        self.resize(1200, 800)
+        main_widget = QWidget()
+        self.setCentralWidget(main_widget)
+        main_layout = QVBoxLayout(main_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        # Top bar
+        self.topbar = TopBar()
+        main_layout.addWidget(self.topbar)
+        # Middle layout
+        middle_layout = QHBoxLayout()
+        self.sidebar = Sidebar()
+        self.device_panel = DevicePanel()
+        middle_layout.addWidget(self.sidebar)
+        middle_layout.addWidget(self.device_panel)
+        main_layout.addLayout(middle_layout)
+        # Bottom tools
+        self.bottom_tools = BottomTools()
+        main_layout.addWidget(self.bottom_tools)
+
+✅ 2. Top Navigation Bar (3uTools Style)
+ui/topbar.py
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
+from PyQt6.QtCore import Qt
+class TopBar(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedHeight(70)
+        self.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #1e6dfb, stop:1 #0b4fd1
+                );
+                color: white;
+            }
+        """)
+        layout = QHBoxLayout(self)
+        title = QLabel("eTool")
+        title.setStyleSheet("font-size: 22px; font-weight: bold;")
+        layout.addWidget(title)
+        layout.addStretch()
+        for name in ["iDevice", "Android", "Flash", "Toolbox"]:
+            btn = QPushButton(name)
+            btn.setStyleSheet("color:white; padding:8px;")
+            layout.addWidget(btn)
+
+✅ 3. Sidebar Menu
+ui/sidebar.py
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+class Sidebar(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedWidth(180)
+        self.setStyleSheet("""
+            QWidget { background:#f5f7fb; }
+            QPushButton {
+                border:none;
+                text-align:left;
+                padding:10px;
+            }
+            QPushButton:hover {
+                background:#e3ecff;
+            }
+        """)
+        layout = QVBoxLayout(self)
+        menu_items = [
+            "Info", "Apps", "Photos", "Music",
+            "Videos", "Files", "Android Tools", "iOS Tools"
+        ]
+        for item in menu_items:
+            btn = QPushButton(item)
+            layout.addWidget(btn)
+        layout.addStretch()
+
+✅ 4. Device Info Panel (Center UI)
+ui/device_panel.py
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame
+class DevicePanel(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+        # Device Box
+        device_box = QFrame()
+        device_box.setStyleSheet("""
+            QFrame {
+                background:white;
+                border-radius:10px;
+                padding:15px;
+            }
+        """)
+        box_layout = QVBoxLayout(device_box)
+        title = QLabel("Connected Device")
+        title.setStyleSheet("font-size:18px; font-weight:bold;")
+        info = QLabel("""
+Device: iPhone / Android
+Status: Connected
+Battery: 73%
+Storage: 11GB / 64GB
+        """)
+        box_layout.addWidget(title)
+        box_layout.addWidget(info)
+        layout.addWidget(device_box)
+
+✅ 5. Bottom Tool Actions (IMPORTANT like 3uTools)
+ui/bottom_tools.py
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton
+class BottomTools(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedHeight(100)
+        self.setStyleSheet("""
+            QWidget { background:#ffffff; }
+            QPushButton {
+                border:none;
+                padding:10px;
+            }
+            QPushButton:hover {
+                background:#f0f4ff;
+            }
+        """)
+        layout = QHBoxLayout(self)
+        tools = [
+            "Install eTool",
+            "Backup/Restore",
+            "Unlock Device",
+            "Flash Firmware",
+            "Fix iOS",
+            "FRP Bypass",
+            "Transfer Data"
+        ]
+        for tool in tools:
+            btn = QPushButton(tool)
+            layout.addWidget(btn)
+
+✅ 6. Modal Dialog (Connection Reminder)
+ui/dialogs.py
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
+class ConnectionDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Connection Reminder")
+        self.resize(400, 250)
+        layout = QVBoxLayout(self)
+        msg = QLabel("✅ Device is connected!\n\nCheck USB cable quality if unstable.")
+        msg.setWordWrap(True)
+        ok_btn = QPushButton("OK")
+        ok_btn.clicked.connect(self.accept)
+        layout.addWidget(msg)
+        layout.addWidget(ok_btn)
+
